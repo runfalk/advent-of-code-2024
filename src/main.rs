@@ -10,6 +10,7 @@ mod day1;
 mod day2;
 mod day3;
 mod day4;
+mod day5;
 mod day6;
 
 #[derive(Debug, Parser)]
@@ -45,6 +46,7 @@ fn main() -> Result<()> {
         2 => as_result(day2::main(&input)?),
         3 => as_result(day3::main(&input)?),
         4 => as_result(day4::main(&input)?),
+        5 => as_result(day5::main(&input)?),
         6 => as_result(day6::main(&input)?),
         1..=25 => return Err(anyhow!("No implementation for this day yet")),
         day => return Err(anyhow!("Day {} is not a valid day for advent of code", day)),
