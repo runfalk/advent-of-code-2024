@@ -52,12 +52,11 @@ pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
             parse_eq(line).with_context(|| anyhow!("Failed to read line {}", i + 1))?;
         if is_valid_eq(test_value, &nums, false) {
             a += test_value;
-        }
-        if is_valid_eq(test_value, &nums, true) {
+        } else if is_valid_eq(test_value, &nums, true) {
             b += test_value;
         }
     }
-    Ok((a, Some(b)))
+    Ok((a, Some(a + b)))
 }
 
 #[cfg(test)]
