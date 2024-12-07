@@ -1,5 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 
+use rayon::prelude::*;
+
 fn parse_eq(l: &str) -> Result<(usize, Vec<usize>)> {
     let Some((id_str, eq_str)) = l.split_once(": ") else {
         return Err(anyhow!("No separator between test value and numbers found"));
@@ -14,7 +16,7 @@ fn parse_eq(l: &str) -> Result<(usize, Vec<usize>)> {
 fn is_valid_eq(test_value: usize, nums: &[usize], use_concat: bool) -> bool {
     let num_operators: usize = if use_concat { 3 } else { 2 };
     let num_combinations = num_operators.pow((nums.len() - 1) as u32);
-    for mut ops in 0..num_combinations {
+    (0..num_combinations).into_par_iter().any(|mut ops| {
         let mut it = nums.iter().copied();
         let Some(mut acc) = it.next() else {
             return false;
@@ -34,8 +36,8 @@ fn is_valid_eq(test_value: usize, nums: &[usize], use_concat: bool) -> bool {
         if acc == test_value {
             return true;
         }
-    }
-    false
+        false
+    })
 }
 
 pub fn main(input: &str) -> Result<(usize, Option<usize>)> {

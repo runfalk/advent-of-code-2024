@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Result};
 use std::collections::HashSet;
 
+use rayon::prelude::*;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Direction {
     Up,
@@ -74,30 +76,32 @@ pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let visited_positions = visited.len();
 
     // Use the original path to determine where we should try to inject obstacles
-    let mut num_possible_obstacle_positions = 0;
     let obstacles_to_try: HashSet<_> = visited_with_direction
         .into_iter()
         .map(|(dir, x, y)| dir.advance((x, y)))
         .filter(|(x, y)| x_bounds.contains(x) && y_bounds.contains(y))
         .collect();
-    for (ox, oy) in obstacles_to_try {
-        let mut dir = Direction::Up;
-        let (mut x, mut y) = guard;
+    let num_possible_obstacle_positions = obstacles_to_try
+        .into_par_iter()
+        .map(|(ox, oy)| {
+            let mut dir = Direction::Up;
+            let (mut x, mut y) = guard;
 
-        let mut visited = HashSet::new();
-        while x_bounds.contains(&x) && y_bounds.contains(&y) {
-            if !visited.insert((dir, x, y)) {
-                num_possible_obstacle_positions += 1;
-                break;
+            let mut visited = HashSet::new();
+            while x_bounds.contains(&x) && y_bounds.contains(&y) {
+                if !visited.insert((dir, x, y)) {
+                    return 1;
+                }
+                let (nx, ny) = dir.advance((x, y));
+                if (nx == ox && ny == oy) || map.contains(&(nx, ny)) {
+                    dir = dir.turn_right();
+                    continue;
+                }
+                (x, y) = (nx, ny);
             }
-            let (nx, ny) = dir.advance((x, y));
-            if (nx == ox && ny == oy) || map.contains(&(nx, ny)) {
-                dir = dir.turn_right();
-                continue;
-            }
-            (x, y) = (nx, ny);
-        }
-    }
+            0
+        })
+        .sum();
 
     Ok((visited_positions, Some(num_possible_obstacle_positions)))
 }
