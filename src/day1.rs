@@ -1,8 +1,5 @@
 use anyhow::{anyhow, Context as _, Result};
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{self, BufRead as _, BufReader};
-use std::path::Path;
 
 fn part_a(mut first: Vec<usize>, mut second: Vec<usize>) -> usize {
     first.sort();
@@ -25,8 +22,7 @@ fn part_b(first: Vec<usize>, second: Vec<usize>) -> usize {
         .sum()
 }
 
-fn parse_line(line: Result<String, io::Error>) -> Result<(usize, usize)> {
-    let line = line?;
+fn parse_line(line: &str) -> Result<(usize, usize)> {
     let mut pair = line.split_whitespace();
     let a = pair.next().ok_or_else(|| anyhow!("No list found"))?;
     let b = pair.next().ok_or_else(|| anyhow!("No second list found"))?;
@@ -37,12 +33,11 @@ fn parse_line(line: Result<String, io::Error>) -> Result<(usize, usize)> {
     Ok((a.parse()?, b.parse()?))
 }
 
-pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
+pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let mut first = Vec::new();
     let mut second = Vec::new();
 
-    let file = File::open(path)?;
-    for (i, line) in BufReader::new(file).lines().enumerate() {
+    for (i, line) in input.lines().enumerate() {
         let (a, b) = parse_line(line).with_context(|| format!("Failed to parse line {}", i + 1))?;
         first.push(a);
         second.push(b);

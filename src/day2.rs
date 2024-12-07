@@ -1,7 +1,4 @@
 use anyhow::{Context as _, Result};
-use std::fs::File;
-use std::io::{self, BufRead as _, BufReader};
-use std::path::Path;
 
 use itertools::Itertools;
 
@@ -26,18 +23,15 @@ fn is_report_safe(report: impl AsRef<[usize]>, skip: Option<usize>) -> bool {
     true
 }
 
-fn parse_report(line: Result<String, io::Error>) -> Result<Vec<usize>> {
-    let line = line?;
-    line.split_whitespace().map(|v| Ok(v.parse()?)).collect()
-}
-
-pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
-    let file = File::open(path)?;
+pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let mut part_a = 0;
     let mut part_b = 0;
-    for (i, line) in BufReader::new(file).lines().enumerate() {
-        let report =
-            parse_report(line).with_context(|| format!("Failed to parse line {}", i + 1))?;
+    for (i, line) in input.lines().enumerate() {
+        let report = line
+            .split_whitespace()
+            .map(|v| Ok(v.parse()?))
+            .collect::<Result<Vec<usize>>>()
+            .with_context(|| format!("Failed to parse line {}", i + 1))?;
         if is_report_safe(&report, None) {
             // Report is valid for both part a and b
             part_a += 1;

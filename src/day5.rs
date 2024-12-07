@@ -1,8 +1,6 @@
 use anyhow::{anyhow, Result};
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
-use std::fs;
-use std::path::Path;
 
 fn is_valid(rules: &HashMap<usize, HashSet<usize>>, update: &[usize]) -> bool {
     for (i, v) in update.iter().enumerate() {
@@ -52,8 +50,7 @@ fn part_b(rules: &HashMap<usize, HashSet<usize>>, updates: &[impl AsRef<[usize]>
     n
 }
 
-pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
-    let input = fs::read_to_string(path)?;
+pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let (rules_str, update_str) = input
         .split_once("\n\n")
         .ok_or_else(|| anyhow!("Failed to split rules and updates"))?;
@@ -86,4 +83,42 @@ mod test {
     use super::*;
 
     test_real_input!(5, 4774, 6004);
+
+    const EXAMPLE: &str = dedent::dedent!(
+        r#"
+        47|53
+        97|13
+        97|61
+        97|47
+        75|29
+        61|13
+        75|53
+        29|13
+        97|29
+        53|29
+        61|53
+        97|53
+        61|29
+        47|13
+        75|47
+        97|75
+        47|61
+        75|61
+        47|29
+        75|13
+        53|13
+
+        75,47,61,53,29
+        97,61,53,29,13
+        75,29,13
+        75,97,47,61,53
+        61,13,29
+        97,13,75,29,47
+        "#
+    );
+
+    #[test]
+    fn test_example() {
+        assert_eq!(main(EXAMPLE).unwrap(), (143, Some(123)));
+    }
 }

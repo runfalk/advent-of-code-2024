@@ -1,10 +1,6 @@
 use anyhow::{anyhow, Context, Result};
-use std::fs::File;
-use std::io::{self, BufRead as _, BufReader};
-use std::path::Path;
 
-fn parse_eq(l: io::Result<String>) -> Result<(usize, Vec<usize>)> {
-    let l = l?;
+fn parse_eq(l: &str) -> Result<(usize, Vec<usize>)> {
     let Some((id_str, eq_str)) = l.split_once(": ") else {
         return Err(anyhow!("No separator between test value and numbers found"));
     };
@@ -42,12 +38,11 @@ fn is_valid_eq(test_value: usize, nums: &[usize], use_concat: bool) -> bool {
     false
 }
 
-pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
+pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let mut a = 0;
     let mut b = 0;
 
-    let file = File::open(path)?;
-    for (i, line) in BufReader::new(file).lines().enumerate() {
+    for (i, line) in input.lines().enumerate() {
         let (test_value, nums) =
             parse_eq(line).with_context(|| anyhow!("Failed to read line {}", i + 1))?;
         if is_valid_eq(test_value, &nums, false) {
@@ -63,4 +58,23 @@ pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
 mod test {
     use super::*;
     test_real_input!(7, 1_289_579_105_366, 92_148_721_834_692);
+
+    const EXAMPLE: &str = dedent::dedent!(
+        r#"
+        190: 10 19
+        3267: 81 40 27
+        83: 17 5
+        156: 15 6
+        7290: 6 8 6 15
+        161011: 16 10 13
+        192: 17 8 14
+        21037: 9 7 18 13
+        292: 11 6 16 20
+        "#
+    );
+
+    #[test]
+    fn test_example() {
+        assert_eq!(main(EXAMPLE).unwrap(), (3749, Some(11387)));
+    }
 }

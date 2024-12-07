@@ -1,10 +1,6 @@
 use anyhow::Result;
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::{BufRead as _, BufReader};
-use std::path::Path;
-
 use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
 
 struct CharLookup(HashMap<char, HashSet<(isize, isize)>>);
 
@@ -60,12 +56,11 @@ fn part_b(map: &CharLookup) -> usize {
     n
 }
 
-pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
+pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let mut map: HashMap<char, HashSet<(isize, isize)>> = HashMap::new();
 
-    let file = File::open(path)?;
-    for (y, l) in BufReader::new(file).lines().enumerate() {
-        for (x, c) in l?.chars().enumerate() {
+    for (y, l) in input.lines().enumerate() {
+        for (x, c) in l.chars().enumerate() {
             map.entry(c).or_default().insert((x as isize, y as isize));
         }
     }
@@ -80,4 +75,24 @@ mod test {
     use super::*;
 
     test_real_input!(4, 2297, 1745);
+
+    const EXAMPLE: &str = dedent::dedent!(
+        r#"
+        MMMSXXMASM
+        MSAMXMSMSA
+        AMXSXMAAMM
+        MSAMASMSMX
+        XMASAMXAMM
+        XXAMMXXAMA
+        SMSMSASXSS
+        SAXAMASAAA
+        MAMMMXMMMM
+        MXMXAXMASX
+        "#
+    );
+
+    #[test]
+    fn test_example() {
+        assert_eq!(main(EXAMPLE).unwrap(), (18, Some(9)));
+    }
 }

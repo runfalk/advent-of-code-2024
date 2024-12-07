@@ -1,6 +1,10 @@
-use anyhow::{anyhow, Result};
+#![deny(clippy::dbg_macro)]
+
+use anyhow::{anyhow, Context as _, Result};
 use clap::Parser;
+use std::fs;
 use std::path::PathBuf;
+use std::time::Instant;
 
 // Expose the test macro to the entire crate
 #[macro_use]
@@ -23,41 +27,52 @@ struct Options {
     input: Option<PathBuf>,
 }
 
+fn run<F: FnOnce(&str) -> Result<(A, Option<B>)>, A: ToString, B: ToString>(
+    f: F,
+    input: &str,
+) -> Result<()> {
+    let start = Instant::now();
+    let (a, b) = f(input)?;
+    let time = Instant::now().saturating_duration_since(start);
+
+    println!("A: {}", pad_newlines(a.to_string()));
+    if let Some(b) = b {
+        println!("B: {}", pad_newlines(b.to_string()));
+    }
+    println!();
+    println!("Time: {:.3} seconds", time.as_secs_f64());
+
+    Ok(())
+}
+
 fn pad_newlines(answer: String) -> String {
     answer.lines().collect::<Vec<_>>().join("\n   ")
 }
 
-fn as_result<A: ToString, B: ToString>((a, b): (A, Option<B>)) -> (String, Option<String>) {
-    (a.to_string(), b.map(|answer| answer.to_string()))
-}
-
 fn main() -> Result<()> {
     let opts = Options::parse();
-    let input = opts
-        .input
-        .unwrap_or_else(|| format!("data/day{}.txt", opts.day).into());
 
     #[allow(
         overlapping_range_endpoints,
         unreachable_patterns,
         clippy::match_overlapping_arm
     )]
-    let (a, b): (String, Option<String>) = match opts.day {
-        1 => as_result(day1::main(&input)?),
-        2 => as_result(day2::main(&input)?),
-        3 => as_result(day3::main(&input)?),
-        4 => as_result(day4::main(&input)?),
-        5 => as_result(day5::main(&input)?),
-        6 => as_result(day6::main(&input)?),
-        7 => as_result(day7::main(&input)?),
-        1..=25 => return Err(anyhow!("No implementation for this day yet")),
+    let solution = match opts.day {
+        1 => day1::main,
+        2 => day2::main,
+        3 => day3::main,
+        4 => day4::main,
+        5 => day5::main,
+        6 => day6::main,
+        7 => day7::main,
+        day @ 1..=25 => return Err(anyhow!("No implementation for day {} yet", day)),
         day => return Err(anyhow!("Day {} is not a valid day for advent of code", day)),
     };
 
-    println!("A: {}", pad_newlines(a));
-    if let Some(b) = b {
-        println!("B: {}", pad_newlines(b));
-    }
-
-    Ok(())
+    let input_path = opts
+        .input
+        .unwrap_or_else(|| format!("data/day{}.txt", opts.day).into());
+    let input = fs::read_to_string(&input_path)
+        .with_context(|| format!("Failed to open input file {:?}", input_path))?;
+    run(solution, &input)
 }

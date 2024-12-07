@@ -1,6 +1,5 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use regex::Regex;
-use std::path::Path;
 
 enum Instruction {
     Enable,
@@ -30,11 +29,10 @@ fn part_b(instructions: &[Instruction]) -> usize {
         .1
 }
 
-pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
+pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let muls = Regex::new(r"do\(\)|don't\(\)|mul\((\d+),(\d+)\)").unwrap();
-    let data = std::fs::read_to_string(path).context("Failed to read file")?;
     let instructions = muls
-        .captures_iter(&data)
+        .captures_iter(input)
         .map(|inst| {
             Ok(match &inst[0] {
                 "do()" => Instruction::Enable,
@@ -51,4 +49,19 @@ pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
 mod test {
     use super::*;
     test_real_input!(3, 173517243, 100450138);
+
+    const EXAMPLE_A: &str =
+        "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+    const EXAMPLE_B: &str =
+        "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
+
+    #[test]
+    fn test_example_a() {
+        assert_eq!(main(EXAMPLE_A).unwrap().0, 161);
+    }
+
+    #[test]
+    fn test_example_b() {
+        assert_eq!(main(EXAMPLE_B).unwrap().1.unwrap(), 48);
+    }
 }

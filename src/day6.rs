@@ -1,8 +1,5 @@
 use anyhow::{anyhow, Result};
 use std::collections::HashSet;
-use std::fs::File;
-use std::io::{BufRead as _, BufReader};
-use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Direction {
@@ -32,15 +29,14 @@ impl Direction {
     }
 }
 
-pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
+pub fn main(input: &str) -> Result<(usize, Option<usize>)> {
     let mut max_x = 0;
     let mut max_y = 0;
     let mut guard = None;
     let mut map = HashSet::new();
 
-    let file = File::open(path)?;
-    for (y, line) in BufReader::new(file).lines().enumerate() {
-        for (x, c) in line?.chars().enumerate() {
+    for (y, line) in input.lines().enumerate() {
+        for (x, c) in line.chars().enumerate() {
             match c {
                 '#' => {
                     map.insert((x as isize, y as isize));
@@ -54,8 +50,8 @@ pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
     }
 
     let guard = guard.ok_or_else(|| anyhow!("No guard start location found"))?;
-    let x_bounds = 0..max_x;
-    let y_bounds = 0..max_y;
+    let x_bounds = 0..=max_x;
+    let y_bounds = 0..=max_y;
 
     // Find the path of the guard
     let mut visited = HashSet::new();
@@ -110,4 +106,24 @@ pub fn main(path: &Path) -> Result<(usize, Option<usize>)> {
 mod test {
     use super::*;
     test_real_input!(6, 5086, 1770);
+
+    const EXAMPLE: &str = dedent::dedent!(
+        r#"
+        ....#.....
+        .........#
+        ..........
+        ..#.......
+        .......#..
+        ..........
+        .#..^.....
+        ........#.
+        #.........
+        ......#...
+        "#
+    );
+
+    #[test]
+    fn test_example() {
+        assert_eq!(main(EXAMPLE).unwrap(), (41, Some(6)));
+    }
 }

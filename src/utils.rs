@@ -7,7 +7,8 @@ macro_rules! test_real_input {
         $(#[$attrs])*
         #[test]
         fn test_real_input() {
-            let (a, b) = match main(format!("data/day{}.txt", $day).as_ref()) {
+            let input = std::fs::read_to_string(&format!("data/day{}.txt", $day)).unwrap();
+            let (a, b) = match main(&input) {
                 Ok(answers) => answers,
                 Err(e) => panic!("Solution failed to complete: {}", e),
             };
