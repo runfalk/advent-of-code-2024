@@ -20,6 +20,8 @@ mod day7;
 mod day8;
 mod day9;
 
+mod day10;
+
 #[derive(Debug, Parser)]
 struct Options {
     /// The day to run the solution for (1-25)
@@ -79,6 +81,7 @@ fn main() -> Result<()> {
         7 => day7::main,
         8 => day8::main,
         9 => day9::main,
+        10 => day10::main,
         day @ 1..=25 => return Err(anyhow!("No implementation for day {} yet", day)),
         day => return Err(anyhow!("Day {} is not a valid day for advent of code", day)),
     };
