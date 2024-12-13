@@ -23,6 +23,7 @@ mod day9;
 mod day10;
 mod day11;
 mod day12;
+mod day13;
 
 #[derive(Debug, Parser)]
 struct Options {
@@ -55,7 +56,7 @@ fn run<F: FnOnce(&str) -> Result<(A, Option<B>)>, A: ToString, B: ToString>(
     } else if ns < 1_000_000_000 {
         println!("Time: {} ms", (ns + 500_000) / 1_000_000);
     } else {
-        println!("Time: {:.3} ms", time.as_secs_f64());
+        println!("Time: {:.3} s", time.as_secs_f64());
     }
 
     Ok(())
@@ -86,6 +87,7 @@ fn main() -> Result<()> {
         10 => day10::main,
         11 => day11::main,
         12 => day12::main,
+        13 => day13::main,
         day @ 1..=25 => return Err(anyhow!("No implementation for day {} yet", day)),
         day => return Err(anyhow!("Day {} is not a valid day for advent of code", day)),
     };
